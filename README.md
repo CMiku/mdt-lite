@@ -2,7 +2,7 @@
 
 Yu-Gi-Oh! Master Duel Translation Script Lite
 
-重要：本项目仅仅是在 [MDT](https://github.com/SkywalkerJi/mdt) 基础上去掉了基于读取内存的识别功能，只保留了基于图像指纹的识别功能；去掉了略有争议的断点提示，只保留了
+重要：本项目仅仅是在 [MDT](https://github.com/SkywalkerJi/mdt) 基础上去掉了基于读取内存的识别功能，只保留了基于图像指纹的识别功能；去掉了略有争议的断点提示，只保留了重要UR/SR提示。感谢原作者 [SkywalkerJi](https://github.com/SkywalkerJi) 的无私奉献！
 
 ## Usage
 
