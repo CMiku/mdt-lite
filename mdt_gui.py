@@ -7,13 +7,11 @@ import configparser
 import webbrowser
 import i18n
 import os
-import time
 
 config_file = "config.ini"
 font_size = 12
 window_alpha = 0.96
 keep_on_top = True
-cv_mode = False
 ui_lock = False
 cfg = configparser.ConfigParser()
 sync_ui = 0
@@ -71,7 +69,6 @@ def config_load():
     global font_size
     global window_alpha
     global keep_on_top
-    global cv_mode
     global borderless
     global no_scrollbar
     global ui_lock
@@ -94,7 +91,6 @@ def config_load():
         font_size = int(config["font_size"])
         window_alpha = float(config["window_alpha"])
         keep_on_top = bool(int(config["keep_on_top"]))
-        cv_mode = bool(int(config["cv_mode"]))
         ui_lock = bool(int(config["ui_lock"]))
         borderless = bool(int(config["borderless"]))
         no_scrollbar = bool(int(config["no_scrollbar"]))
@@ -139,28 +135,14 @@ def show_card_tier(window, cid):
         window["-notice-"].update("")
 
 
-def show_break_point(window, cid):
-    tier = service.get_break_point(str(cid))
-    text = window["-notice-"].get()
-    if tier == 99:
-        window["-notice-"].update(
-            value=text + " " + _("断点警告"), background_color="#3700B3"
-        )
-    else:
-        window["-notice-"].update(background_color="#3F3F3F")
-
-
 def main():
     global sync_ui
     global web_search
     global locale
-    global cv_mode
     settings_active = False
     uac_reload()
     service.start()
     config_load()
-    if cv_mode:
-        service.set_cv_mode()
     i18n.set("filename_format", "{locale}.{format}")
     i18n.set("available_locales", ["zh-CN", "zh-TW"])
     i18n.set("file_format", "json")
@@ -334,7 +316,7 @@ def main():
                 ),
                 sg.pin(
                     sg.Frame(
-                        _("提示"),
+                        _("分解提示"),
                         [
                             [
                                 sg.T(
@@ -358,22 +340,17 @@ def main():
         "&Right",
         [
             _("设置"),
-            # _("切换图像模式"),
             _("保存窗口位置"),
             _("恢复默认"),
             _("切换语言"),
             _("重启检测"),
-            _("导入卡组"),
-            _("卡包查询"),
             _("检查更新"),
-            _("联系开发者"),
-            _("反和谐补丁"),
             _("关闭"),
         ],
     ]
     layout = [[card_frame]]
     window = sg.Window(
-        "MDT v0.2.12 GPLv3",
+        "MDTL v0.0.1 GPLv3",
         layout,
         default_element_size=(12, 1),
         font=("Microsoft YaHei", font_size),
@@ -419,7 +396,6 @@ def main():
                     window["-pdesc_frame-"].update(visible=False)
                 window["-desc-"].update(card_t["text"]["desc"])
                 show_card_tier(window, cid)
-                show_break_point(window, cid)
             except Exception:
                 pass
                 # print("数据库中未查到该卡")
@@ -459,16 +435,13 @@ def main():
             i18n.set("locale", locale)
             config_set("locale", locale)
             restart()
-        # 重启
-        # elif event == _("切换图像模式"):
-        #     service.set_cv_mode()
         elif event == _("重启检测"):
             restart()
         # 恢复默认
         elif event == _("恢复默认"):
             window["-types_frame-"].update(visible=True)
             window["-en_name_frame-"].update(visible=True)
-            window["-jp_name_frame-"].update(visible=True)
+            window["-jp_name_frame-"].update(visible=False)
             window["-id_frame-"].update(visible=True)
             web_search = True
             window.keep_on_top_set()
@@ -499,15 +472,7 @@ def main():
             config_set("x_len", str(win_size[0]))
             config_set("y_len", str(win_size[1]))
         elif event == _("检查更新"):
-            webbrowser.open("https://github.com/SkywalkerJi/mdt/releases/latest")
-        elif event == _("反和谐补丁"):
-            webbrowser.open("https://www.nexusmods.com/yugiohmasterduel/mods/1")
-        elif event == _("卡包查询"):
-            webbrowser.open("https://ygo.xn--uesr8qr0rdwk.cn/")
-        elif event == _("导入卡组"):
-            webbrowser.open("https://ygo.xn--uesr8qr0rdwk.cn/#/convert")
-        elif event == _("联系开发者"):
-            webbrowser.open("https://github.com/SkywalkerJi/mdt#contact-us")
+            webbrowser.open("https://github.com/CMiku/mdt-lite")
         if not settings_active and event == _("设置"):
             settings_active = True
             sync_ui = 0
@@ -549,29 +514,6 @@ def main():
                                 )
                             ]
                         ],
-                        title_color="#61E7DC",
-                    )
-                ],
-                [
-                    sg.Frame(
-                        _("识别模式"),
-                        [
-                            [
-                                sg.Radio(
-                                    _("内存"),
-                                    "RADIO1",
-                                    key="-memory_mode-",
-                                    enable_events=True,
-                                ),
-                                sg.Radio(
-                                    _("图像"),
-                                    "RADIO1",
-                                    key="-cv_mode-",
-                                    enable_events=True,
-                                ),
-                            ]
-                        ],
-                        tooltip=_("图像模式支持商店和抽卡汉化，但是更耗费资源。"),
                         title_color="#61E7DC",
                     )
                 ],
@@ -656,18 +598,7 @@ def main():
                                 )
                             ]
                         ]
-                    ),
-                    sg.Column(
-                        [
-                            [
-                                sg.Button(
-                                    _("导出卡组"),
-                                    button_color=("white", "#238636"),
-                                    border_width=1,
-                                )
-                            ]
-                        ]
-                    ),
+                    )
                 ],
             ]
             settings_win = sg.Window(
@@ -694,22 +625,11 @@ def main():
                 settings_win["-show_notice-"].update(value=show_notice)
                 settings_win["-show_types-"].update(value=show_types)
                 settings_win["-web_search-"].update(value=web_search)
-                settings_win["-cv_mode-"].update(value=cv_mode)
-                settings_win["-memory_mode-"].update(value=not cv_mode)
                 set_ui_lock(settings_win, ui_lock)
                 sync_ui = 1
             if ev == sg.WIN_CLOSED or ev == _("关闭"):
                 settings_active = False
                 settings_win.close()
-            # 切换模式
-            elif ev == "-cv_mode-":
-                cv_mode = True
-                service.set_cv_mode()
-                config_set("cv_mode", "1")
-            elif ev == "-memory_mode-":
-                cv_mode = False
-                service.set_cv_mode()
-                config_set("cv_mode", "0")
             # 透明度滑块
             elif ev == "-window_alpha-":
                 window.set_alpha(vals["-window_alpha-"])
@@ -764,26 +684,6 @@ def main():
                     set_ui_lock(settings_win, True)
                 else:
                     set_ui_lock(settings_win, False)
-            elif ev == _("导出卡组"):
-                now = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
-                deck = service.get_deck_dict()
-                deck_string = service.get_deck_string(locale)
-                ydk = "#created by MDT https://github.com/SkywalkerJi/mdt \n#main\n"
-                if "error" not in deck:
-                    for cid in deck["ma_cid_list"]:
-                        ydk += f"{cards_db[str(cid)]['id']}\n"
-                    ydk += "#extra\n"
-                    for cid in deck["ex_cid_list"]:
-                        ydk += f"{cards_db[str(cid)]['id']}\n"
-                    with open(_("ygopro卡组") + now + ".ydk", "w", encoding="utf8") as f:
-                        f.write(ydk)
-                        f.close()
-                    with open(_("卡组文本") + now + ".txt", "w", encoding="utf8") as f:
-                        f.write(
-                            "#created by MDT https://github.com/SkywalkerJi/mdt \n"
-                            + deck_string
-                        )
-                        f.close()
     window.close()
 
 

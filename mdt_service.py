@@ -1,5 +1,4 @@
 import mdt as mdt
-import mdt_deck_reader as reader
 from threading import Thread
 
 
@@ -25,13 +24,6 @@ def get_cid():
         return mdt.cid_show_gui
     else:
         return None
-
-
-def set_cv_mode():
-    if mdt.cv_mode == 0:
-        mdt.cv_mode = 1
-    else:
-        mdt.cv_mode = 0
 
 
 def get_cards_db(locale: str):
@@ -65,11 +57,3 @@ def get_break_point(cid: str):
             return mdt.break_point[cid]["tier"]
     else:
         return None
-
-
-def get_deck_dict():
-    return reader.get_deck_dict()
-
-
-def get_deck_string(locale: str):
-    return reader.get_deck_string(locale)

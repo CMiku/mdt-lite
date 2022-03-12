@@ -1,5 +1,4 @@
 from threading import Thread
-import pymem
 import keyboard
 import time
 import json
@@ -22,7 +21,6 @@ deck_addr = None
 duel_addr = None
 oppo_addr = None
 sleep_time = 0.1
-cv_mode = 0
 cards_db_CN = {}
 cards_db_TW = {}
 ur_tier_list = {}
@@ -84,27 +82,7 @@ def translate():
     global cid_temp_oppo
     global cid_show_gui
     global baseAddress
-    if cv_mode == 0:
-        if baseAddress is None:
-            try:
-                get_baseAddress()
-            except Exception:
-                return
-        cid_deck = get_cid(1)
-        cid_duel = get_cid(2)
-        cid_oppo = get_cid(3)
-
-        if valid_cid(cid_oppo) and cid_oppo != cid_temp_oppo:
-            cid_temp_oppo = cid_oppo
-            cid_show_gui = cid_oppo
-        if valid_cid(cid_deck) and cid_deck != cid_temp_deck:
-            cid_temp_deck = cid_deck
-            cid_show_gui = cid_deck
-        if valid_cid(cid_duel) and cid_duel != cid_temp_duel:
-            cid_temp_duel = cid_duel
-            cid_show_gui = cid_duel
-    elif cv_mode == 1:
-        cid_show_gui = mdt_cv.get_scan()
+    cid_show_gui = mdt_cv.get_scan()
 
 
 def translate_check_thread():
@@ -122,22 +100,6 @@ def status_change(switch: bool, need_pause: bool, exit: bool):
     global process_exit
     process_exit = exit
     pause = need_pause
-
-
-def get_baseAddress():
-    global pm
-    global baseAddress
-    global deck_addr
-    global duel_addr
-    global oppo_addr
-    pm = pymem.Pymem("masterduel.exe")
-    baseAddress = pymem.process.module_from_name(
-        pm.process_handle, "GameAssembly.dll"
-    ).lpBaseOfDll
-    # deck 组卡界面 duel 决斗界面 oppo 回放
-    deck_addr = baseAddress + int("0x01CCE3C0", base=16)
-    duel_addr = baseAddress + int("0x01BD3FD8", base=16)
-    oppo_addr = baseAddress + int("0x01CCE3C0", base=16)
 
 
 # UAC判断
@@ -196,20 +158,12 @@ def config_load():
             sr_tier_list = json.load(f)
     except Exception:
         pass
-    try:
-        with open("./data/breakpoint.json", "rb") as f:
-            break_point = json.load(f)
     except Exception:
         pass
 
 
 def main():
     uac_reload()
-    # 加载游戏
-    try:
-        get_baseAddress()
-    except Exception:
-        pass
     config_load()
     keyboard.add_hotkey(switch_hotkey, status_change, args=(True, False, False))
     keyboard.add_hotkey(pause_hotkey, status_change, args=(False, True, False))
